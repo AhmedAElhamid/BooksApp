@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\BooksImport;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\SummaryReport;
@@ -9,6 +10,7 @@ use App\Traits\SendReport;
 use App\Utils\ControllerUtils;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class BookController extends Controller
 {
@@ -56,6 +58,7 @@ class BookController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws ValidationException
      */
     public function store(Request $request): JsonResponse
     {
@@ -68,7 +71,10 @@ class BookController extends Controller
         return response()->json($response,201);
     }
 
-    private function storeBook($book,$showErrorsReport=true)
+    /**
+     * @throws ValidationException
+     */
+    private function storeBook($book, $showErrorsReport=true)
     {
         $request = new Request($book);
         if($showErrorsReport){
@@ -98,8 +104,9 @@ class BookController extends Controller
     /**
      * Store multiple resources in storage.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return JsonResponse
+     * @throws ValidationException
      */
 
     public function storeBooks(Request $request): JsonResponse
@@ -129,13 +136,37 @@ class BookController extends Controller
                 200);
     }
 
+
+    public function storeBooksFromExcel(Request $request): JsonResponse
+    {
+//        $rules = array(
+//            'file' => 'file|required'
+//        );
+//        $this->validate($request,$rules);
+//        if(!$request->hasFile('file'))
+//            return response()->json('not found',400);
+//
+//        $file = $request->file('file');
+        $file = '/Users/ahmedabdelhamid/Postman/files/books.xlsx';
+
+        (new BooksImport())
+            ->queue($file);
+
+        $summaryReport = BooksImport::getSummary();
+
+        $this->basic_email($summaryReport);
+        return response()->json(["msg"=>
+            "added ". count($summaryReport->getBooksAdded()) .
+            " books and " . count($summaryReport->getBooksFailed()) . " failed"]);
+    }
+
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return JsonResponse
      */
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         $book = Book::findOrFail($id);
         $response =
@@ -149,11 +180,12 @@ class BookController extends Controller
      * Update the specified resource in storage.
      *
      * @param Request $request
-     * @param  int  $id
+     * @param int $id
      * @return JsonResponse
+     * @throws ValidationException
      */
 
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         $book = Book::with('author')->findOrFail($id);
         $rules = $this->bookValidationRules();
@@ -161,7 +193,6 @@ class BookController extends Controller
             unset($rules['isbn']);
         else
             $rules['isbn'] = 'required|unique:books';
-
 
         $this->validate($request,$rules);
 
@@ -187,10 +218,10 @@ class BookController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return JsonResponse
      */
-    public function destroy($id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         Book::findOrFail($id)->delete();
 
