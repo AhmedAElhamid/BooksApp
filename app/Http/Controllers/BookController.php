@@ -9,8 +9,6 @@ use App\Traits\SendReport;
 use App\Utils\ControllerUtils;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Nette\Schema\ValidationException;
 
 class BookController extends Controller
 {
@@ -39,9 +37,13 @@ class BookController extends Controller
      *
      * @return JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $books = Book::with('author')->get();
+
+        foreach ($books as $book)
+            $book['view_book']=
+                ControllerUtils::getDataLink('books/'.$book['id']);
 
         $response =
             ControllerUtils::mapDataToResponse(["books"=>$books],
@@ -55,7 +57,7 @@ class BookController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $book = $this->storeBook($request->all());
 
@@ -93,7 +95,14 @@ class BookController extends Controller
 
     }
 
-    public function storeBooks(Request $request)
+    /**
+     * Store multiple resources in storage.
+     *
+     * @param  Request  $request
+     * @return JsonResponse
+     */
+
+    public function storeBooks(Request $request): JsonResponse
     {
         $this->validate($request,[
             'books'=>'required|array',
@@ -126,11 +135,12 @@ class BookController extends Controller
      * @param  int  $id
      * @return JsonResponse
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $book = Book::findOrFail($id);
         $response =
             ControllerUtils::mapDataToResponse(["book"=>$book],"Book Information");
+
         return response()->json($response);
     }
 
@@ -142,7 +152,8 @@ class BookController extends Controller
      * @param  int  $id
      * @return JsonResponse
      */
-    public function update(Request $request, $id)
+
+    public function update(Request $request, $id): JsonResponse
     {
         $book = Book::with('author')->findOrFail($id);
         $rules = $this->bookValidationRules();
@@ -169,6 +180,7 @@ class BookController extends Controller
             ControllerUtils::getDataLink('books/'.$book['id']);
         $response =
             ControllerUtils::mapDataToResponse(["book"=>$book],"Book Updated");
+
         return response()->json($response);
     }
 
@@ -178,13 +190,15 @@ class BookController extends Controller
      * @param  int  $id
      * @return JsonResponse
      */
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         Book::findOrFail($id)->delete();
+
         $create =
             ControllerUtils::getDataLink("books",
                 "POST",
                 'title,description,isbn,author_name');
+
         $response = ControllerUtils::mapDataToResponse(["create"=>$create],
             "Book Deleted");
         return response()->json($response);
