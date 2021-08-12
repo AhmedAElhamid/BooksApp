@@ -4,19 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Author;
 use App\Models\Book;
+use App\Models\SummaryReport;
+use App\Traits\SendReport;
 use App\Utils\ControllerUtils;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Nette\Schema\ValidationException;
 
 class BookController extends Controller
 {
+    use SendReport;
 
     private function bookValidationRules(): array
     {
         return [
             'title'=>'required',
-            'isbn'=>'required|unique:books',
+            'isbn'=>'required|numeric|unique:books',
             'description'=>'required',
             'author'=>'required',
         ];
@@ -53,10 +57,30 @@ class BookController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,$this->bookValidationRules());
+        $book = $this->storeBook($request->all());
 
-        $book = $this->mapRequestToBook($request,[]);
+        $book['view_book']=
+            ControllerUtils::getDataLink('books/'.$book['id']);
+        $response =
+            ControllerUtils::mapDataToResponse(["book"=>$book],"Book Added");
+        return response()->json($response,201);
+    }
 
+    private function storeBook($book,$showErrorsReport=true)
+    {
+        $request = new Request($book);
+        if($showErrorsReport){
+            $this->validate($request,
+                $this->bookValidationRules());
+        }else{
+            try {
+                $this->validate($request,
+                    $this->bookValidationRules());
+            }catch (\Exception $ex){
+                return null;
+            }
+        }
+        $book = $this->mapRequestToBook($request);
         $book = new Book($book);
 
         $author = $request->input('author');
@@ -65,13 +89,35 @@ class BookController extends Controller
             $authorInDb = new Author(["name"=>$author]);
             $authorInDb->save();
         }
-        $authorInDb->books()->save($book);
+        return $authorInDb->books()->save($book);
 
-        $book['view_book']=
-            ControllerUtils::getDataLink('books/'.$book['id']);
-        $response =
-            ControllerUtils::mapDataToResponse(["book"=>$book],"Book Added");
-        return response()->json($response,201);
+    }
+
+    public function storeBooks(Request $request)
+    {
+        $this->validate($request,[
+            'books'=>'required|array',
+            'books.0'=>'required'
+        ],[
+            'required'=>'books must be an array of books'
+        ]);
+        $summaryReport = new SummaryReport();
+        $books = $request->input('books');
+
+        foreach ($books as $book)
+        {
+            $added = $this->storeBook($book,false);
+            $added
+                ? $summaryReport->bookAdded($book)
+                : $summaryReport->bookFailed($book);
+        }
+
+        $this->basic_email($summaryReport);
+
+        return response()->json(["msg"=>
+            "added ". count($summaryReport->getBooksAdded()) .
+            " books and " . count($summaryReport->getBooksFailed()) . " failed"],
+                200);
     }
 
     /**
@@ -82,7 +128,7 @@ class BookController extends Controller
      */
     public function show($id)
     {
-        $book = [];
+        $book = Book::findOrFail($id);
         $response =
             ControllerUtils::mapDataToResponse(["book"=>$book],"Book Information");
         return response()->json($response);
@@ -100,9 +146,11 @@ class BookController extends Controller
     {
         $book = Book::with('author')->findOrFail($id);
         $rules = $this->bookValidationRules();
-        $request->input('isbn') == $book->isbn
-            ? $rules['isbn'] = 'required'
-            : $rules['isbn'] = 'required|unique:books';
+        if($request->input('isbn') == $book->isbn)
+            unset($rules['isbn']);
+        else
+            $rules['isbn'] = 'required|unique:books';
+
 
         $this->validate($request,$rules);
 
@@ -132,6 +180,7 @@ class BookController extends Controller
      */
     public function destroy($id)
     {
+        Book::findOrFail($id)->delete();
         $create =
             ControllerUtils::getDataLink("books",
                 "POST",

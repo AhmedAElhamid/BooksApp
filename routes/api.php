@@ -18,6 +18,8 @@ Route::resource('books','BookController',[
    'except' => ['create','edit']
 ]);
 
+Route::post('books/multiple','BookController@storeBooks');
+
 Route::resource('authors','AuthorController',[
    'only' => ['index','show']
 ]);
