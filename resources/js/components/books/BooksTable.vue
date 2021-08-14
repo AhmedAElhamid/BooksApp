@@ -55,17 +55,19 @@
 
         <template slot="operation" slot-scope="text, record">
             <a-popconfirm
-                v-if="dataSource.length"
+                v-if="books.length"
                 title="Sure to delete?"
                 @confirm="() => onDelete(record.key)"
             >
-                <a href="javascript">Delete</a>
+                <a href="delete">Delete</a>
             </a-popconfirm>
         </template>
     </a-table>
 </template>
 
 <script>
+
+import {dataService} from "../../shared/data.service";
 
 export default {
     name:"BooksTable",
@@ -170,11 +172,11 @@ export default {
                         }
                     },
                 },
-                // {
-                //     title: 'operation',
-                //     dataIndex: 'operation',
-                //     scopedSlots: { customRender: 'operation' },
-                // },
+                {
+                    title: 'operation',
+                    dataIndex: 'operation',
+                    scopedSlots: { customRender : 'operation' },
+                },
             ],
         };
     },
@@ -188,6 +190,14 @@ export default {
         handleReset(clearFilters) {
             clearFilters();
             this.searchText = '';
+        },
+        async onDelete(key) {
+            console.log(key)
+            const data = dataService.deleteBook(key)
+            if(data){
+                const books = [...this.books];
+                this.books = books.filter(item => item.key !== key);
+            }
         },
     },
     filters: {
