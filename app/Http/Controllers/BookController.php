@@ -125,7 +125,7 @@ class BookController extends Controller
                 : $summaryReport->bookFailed($book);
         }
 
-        $this->basic_email($summaryReport);
+//        $this->basic_email($summaryReport);
 
         return response()->json(["msg"=>
                 "added ". count($summaryReport->getBooksAdded()) .
@@ -143,7 +143,6 @@ class BookController extends Controller
         $this->validate($request,$rules);
 
         $file = $request->file('file');
-//        $file = '/Users/ahmedabdelhamid/Postman/files/books.xlsx';
 
         (new BooksImport())
             ->queue($file);
