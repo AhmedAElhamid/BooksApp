@@ -41,6 +41,8 @@ class BookController extends Controller
      */
     public function index(): JsonResponse
     {
+
+        error_log("accessed books api route");
         $books = Book::with('author')->get();
 
         foreach ($books as $book)
@@ -92,13 +94,10 @@ class BookController extends Controller
         $book = new Book($book);
 
         $author = $request->input('author');
-        $authorInDb = Author::where('name',$author)->first();
-        if(!$authorInDb){
-            $authorInDb = new Author(["name"=>$author]);
-            $authorInDb->save();
-        }
+        $authorInDb = Author::where('name',$author)->firstOrCreate([
+            "name"=>$author
+        ]);
         return $authorInDb->books()->save($book);
-
     }
 
     /**
@@ -133,21 +132,22 @@ class BookController extends Controller
         return response()->json(["msg"=>
             "added ". count($summaryReport->getBooksAdded()) .
             " books and " . count($summaryReport->getBooksFailed()) . " failed"],
-                200);
+            count($summaryReport->getBooksAdded())
+                ? 201
+                : 400
+        );
     }
 
 
     public function storeBooksFromExcel(Request $request): JsonResponse
     {
-//        $rules = array(
-//            'file' => 'file|required'
-//        );
-//        $this->validate($request,$rules);
-//        if(!$request->hasFile('file'))
-//            return response()->json('not found',400);
-//
-//        $file = $request->file('file');
-        $file = '/Users/ahmedabdelhamid/Postman/files/books.xlsx';
+        $rules = array(
+            'file' => 'file|required'
+        );
+        $this->validate($request,$rules);
+
+        $file = $request->file('file');
+//        $file = '/Users/ahmedabdelhamid/Postman/files/books.xlsx';
 
         (new BooksImport())
             ->queue($file);
@@ -157,7 +157,8 @@ class BookController extends Controller
         $this->basic_email($summaryReport);
         return response()->json(["msg"=>
             "added ". count($summaryReport->getBooksAdded()) .
-            " books and " . count($summaryReport->getBooksFailed()) . " failed"]);
+            " books and " . count($summaryReport->getBooksFailed()) . " failed"]
+        );
     }
 
     /**
@@ -199,11 +200,9 @@ class BookController extends Controller
         $book = $this->mapRequestToBook($request,$book);
 
         $author = $request->input('author');
-        $authorInDb = Author::where('name',$author)->first();
-        if(!$authorInDb){
-            $authorInDb = new Author(["name"=>$author]);
-            $authorInDb->save();
-        }
+        $authorInDb = Author::where('name',$author)->firstOrCreate([
+            "name"=>$author
+        ]);
         if(!$authorInDb->books()->save($book))
             return response()->json(['error while updating book'],401);
 
@@ -213,6 +212,26 @@ class BookController extends Controller
             ControllerUtils::mapDataToResponse(["book"=>$book],"Book Updated");
 
         return response()->json($response);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function isValidIsbn(Request $request): JsonResponse
+    {
+        $this->validate($request,[
+            'isbn'=>'required'
+        ]);
+        $book = Book::where('isbn',$request->input('isbn'))
+                ->first();
+
+        if(!$book)
+            return response()->json(["success"=>"isbn is valid"]);
+
+        return response()->json(["error"=>"isbn is not valid"]);
     }
 
     /**

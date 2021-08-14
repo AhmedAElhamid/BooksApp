@@ -1,20 +1,26 @@
-import ExampleComponent from "./components/ExampleComponent";
+import Books from "./components/books/Books";
+import Authors from "./components/authors/Authors";
+import PageNotFound from "./components/shared/page-not-found";
 
 
 export const routes = [
     {
-        name: 'home',
-        path: '/',
-        component: ExampleComponent
+      path: '/',
+      redirect: 'books'
     },
-    // {
-    //     name: 'add',
-    //     path: '/add',
-    //     component: AddBook
-    // },
-    // {
-    //     name: 'edit',
-    //     path: '/edit/:id',
-    //     component: EditBook
-    // }
+    {
+        name: 'books',
+        path: '/books',
+        component: Books
+    },
+    {
+        name: 'authors',
+        path: '/authors',
+        component: Authors
+    },
+    {
+        name: 'page-not-found',
+        path: '*',
+        component: PageNotFound
+    }
 ];

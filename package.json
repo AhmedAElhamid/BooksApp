@@ -1,7 +1,7 @@
 {
     "private": true,
     "scripts": {
-        "dev": "npm run development",
+        "dev": "concurrently \"php artisan serve --port=8080\" \"npm run watch\"",
         "development": "mix",
         "watch": "mix watch",
         "watch-poll": "mix watch -- --watch-options-poll=1000",
@@ -12,6 +12,7 @@
     "devDependencies": {
         "axios": "^0.21",
         "bootstrap": "^4.6.0",
+        "concurrently": "^6.2.1",
         "jquery": "^3.6",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
@@ -29,6 +30,7 @@
         "fs-extra": "^10.0.0",
         "laravel-mix-versionhash": "^2.0.1",
         "vue-axios": "^3.2.5",
-        "vue-router": "^3.5.2"
+        "vue-router": "^3.5.2",
+        "xlsx": "^0.17.0"
     }
 }

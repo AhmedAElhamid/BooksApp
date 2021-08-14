@@ -1,4 +1,5 @@
 import Vue from "vue";
+import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
 
 
@@ -13,6 +14,7 @@ import {routes} from './routes';
 
 
 Vue.use(VueRouter);
+Vue.use(Antd);
 Vue.use(VueAxios, axios);
 
 const router = new VueRouter({

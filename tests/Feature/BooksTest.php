@@ -14,12 +14,9 @@ class BooksTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $booksUrl = 'api/v1/books';
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+    private string $booksUrl = 'api/v1/books';
+
+
     public function test_it_returns_all_books()
     {
         Author::factory()
@@ -33,7 +30,7 @@ class BooksTest extends TestCase
                 $json->has('msg')
                     ->has('books', 3)
             );
-        $response->assertStatus(200);
+        $response->assertOk();
     }
 
     public function test_it_adds_book_to_table()
@@ -51,7 +48,29 @@ class BooksTest extends TestCase
                     ->etc()
                 )
             );
-        $response->assertStatus(201);
+        $response->assertCreated();
+    }
+
+    public function test_it_creates_new_author_if_not_found()
+    {
+        $book = $this->dummyBook();
+        $response = $this->post($this->booksUrl,$book);
+        $response->assertCreated();
+
+        $authors = Author::all();
+        $this->assertCount(1, $authors);
+    }
+
+
+    public function test_it_link_book_to_author_if_the_author_name_already_exists()
+    {
+        $books = $this->dummyBooks();
+        $response = $this->post($this->booksUrl."/multiple",['books'=>$books]);
+
+        $response->assertCreated();
+
+        $authors = Author::all();
+        $this->assertCount(2,$authors);
     }
 
     public function test_it_does_not_add_book_to_table_if_isbn_is_duplicated()
@@ -101,7 +120,7 @@ class BooksTest extends TestCase
         $newIsbn = '456';
         $book['isbn'] = $newIsbn;
         $response = $this->put($this->booksUrl . "/" . $bookId,$book);
-        $response->assertStatus(200);
+        $response->assertOk();
 
         $response
             ->assertJson(fn (AssertableJson $json) =>
@@ -113,40 +132,48 @@ class BooksTest extends TestCase
                 )
             );
 
-        $result = Book::all();
-        $this->assertCount(1, $result);
+        $books = Book::all();
+        $this->assertCount(1, $books);
     }
 
     public function test_it_deletes_a_book()
     {
         $book = $this->dummyBook();
         $response = $this->post($this->booksUrl,$book);
-        $response->assertStatus(201);
+
+        $response->assertCreated();
 
         $bookId = $response->decodeResponseJson()['book']['id'];
-        $this->delete($this->booksUrl . "/" . $bookId);
+        $response = $this->delete($this->booksUrl . "/" . $bookId);
 
-        $result = Book::all();
-        $this->assertCount(0, $result);
+        $response->assertOk();
+
+        $books = Book::all();
+        $this->assertCount(0, $books);
     }
 
     public function test_it_can_add_multiple_books()
     {
         $books = $this->dummyBooks();
-        $this->post($this->booksUrl."/multiple",['books'=>$books]);
+        $response = $this->post($this->booksUrl."/multiple",['books'=>$books]);
 
-        $result = Book::all();
-        $this->assertCount(3, $result);
+        $response->assertCreated();
+
+        $books = Book::all();
+        $this->assertCount(3, $books);
     }
+
 
     public function test_it_only_adds_valid_books()
     {
         $books = $this->dummyBooks();
         $books[1]['isbn'] = $books[0]['isbn'];
-        $this->post($this->booksUrl."/multiple",['books'=>$books]);
+        $response = $this->post($this->booksUrl."/multiple",['books'=>$books]);
 
-        $result = Book::all();
-        $this->assertCount(2, $result);
+        $response->assertCreated();
+
+        $books = Book::all();
+        $this->assertCount(2, $books);
     }
 
 

@@ -1,23 +1,18 @@
 <template>
-    <div class="container">
-
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="collapse navbar-collapse">
-                <div class="navbar-nav">
-                    <router-link to="/" class="nav-item nav-link">Home</router-link>
-                    <router-link to="/add" class="nav-item nav-link">Add Book</router-link>
-                </div>
-            </div>
-        </nav>
-        <br/>
-        <router-view></router-view>
-        <div class="text-center" style="margin: 20px 0px 20px 0px;">
-            <a href="https://shouts.dev/" target="_blank"><img src="https://i.imgur.com/hHZjfUq.png"></a><br>
-            <span class="text-secondary">Laravel & Vue CRUD Single Page Application (SPA) Tutorial</span>
+    <div>
+        <Navbar />
+        <div class="container">
+            <br/>
+<!--            <Main />-->
+            <router-view></router-view>
         </div>
     </div>
 </template>
 
 <script>
-export default {}
+import Navbar from "./components/layout/Navbar";
+import Main from "./components/layout/Main";
+export default {
+    components: {Main, Navbar}
+}
 </script>

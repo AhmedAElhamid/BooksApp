@@ -24,9 +24,16 @@ Route::post('books/multiple',
 Route::post('books/excel',
     'BookController@storeBooksFromExcel');
 
+Route::post('books/isbn',
+    'BookController@isValidIsbn');
+
 Route::resource('authors','AuthorController',[
    'only' => ['index','show']
 ]);
+
+Route::fallback(function (){
+    abort(404, 'API resource not found');
+});
 
 //Route::middleware('auth:api')->get('/user', function (Request $request) {
 //    return $request->user();
