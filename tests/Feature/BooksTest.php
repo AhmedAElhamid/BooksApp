@@ -81,9 +81,7 @@ class BooksTest extends TestCase
         $response->assertStatus(201);
 
         $response = $this->post($this->booksUrl,$book);
-        $response->assertSessionHasErrors([
-            'isbn' => 'The isbn has already been taken.'
-        ]);
+        $response->assertStatus(422);
     }
 
     public function test_it_does_not_add_book_to_table_if_isbn_is_not_numeric()
@@ -92,9 +90,7 @@ class BooksTest extends TestCase
         $book['isbn'] = "abc";
 
         $response = $this->post($this->booksUrl,$book);
-        $response->assertSessionHasErrors([
-            'isbn' => 'The isbn must be a number.'
-        ]);
+        $response->assertStatus(422);
     }
 
     public function test_it_does_not_add_book_if_not_all_fields_are_provided()
@@ -102,12 +98,7 @@ class BooksTest extends TestCase
         $book = [];
 
         $response = $this->post($this->booksUrl,$book);
-        $response->assertSessionHasErrors([
-            'title' => 'The title field is required.',
-            'isbn' => 'The isbn field is required.',
-            'description' => 'The description field is required.',
-            'author' => 'The author field is required.'
-        ]);
+        $response->assertStatus(422);
     }
 
     public function test_it_updates_a_book()

@@ -131,7 +131,8 @@ class BookController extends Controller
 
         return response()->json(["msg"=>
                 "added ". count($summaryReport->getBooksAdded()) .
-                " books and " . count($summaryReport->getBooksFailed()) . " failed"]
+                " books and " . count($summaryReport->getBooksFailed()) . " failed"],
+                201
         );
     }
 
@@ -154,8 +155,8 @@ class BookController extends Controller
         $this->basic_email($summaryReport);
         return response()->json(["msg"=>
             "added ". count($summaryReport->getBooksAdded()) .
-            " books and " . count($summaryReport->getBooksFailed()) . " failed"]
-        );
+            " books and " . count($summaryReport->getBooksFailed()) . " failed"],
+        201);
     }
 
     /**
