@@ -150,7 +150,8 @@ class BookController extends Controller
 
         $summaryReport = BooksImport::getSummary();
 
-        $this->basic_email($summaryReport);
+//        $this->basic_email($summaryReport);
+
         return response()->json(["msg"=>
             "added ". count($summaryReport->getBooksAdded()) .
             " books and " . count($summaryReport->getBooksFailed()) . " failed"],
