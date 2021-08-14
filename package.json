@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "concurrently \"php artisan serve --port=8080\" \"npm run watch\"",
+    "dev": "concurrently \"php artisan serve --port=8000\" \"npm run watch\"",
     "development": "mix",
     "hot": "mix watch --hot",
     "prod": "npm run production",

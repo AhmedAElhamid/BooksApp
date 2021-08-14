@@ -41,8 +41,6 @@ class BookController extends Controller
      */
     public function index(): JsonResponse
     {
-
-        error_log("accessed books api route");
         $books = Book::with('author')->get();
 
         foreach ($books as $book)
@@ -213,7 +211,7 @@ class BookController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * check if isbn is valid.
      *
      * @param Request $request
      * @return JsonResponse
