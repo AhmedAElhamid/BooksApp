@@ -3,7 +3,6 @@
         <Navbar />
         <div class="container">
             <br/>
-<!--            <Main />-->
             <router-view></router-view>
         </div>
     </div>

@@ -1,16 +1,20 @@
 <template>
-<!--    <a-modal-->
-<!--        title="Title"-->
-<!--        :visible="visible"-->
-<!--        :confirm-loading="confirmLoading"-->
-<!--        @ok="handleOk"-->
-<!--        @cancel="handleCancel"-->
-<!--    >-->
-    <a-modal :visible="visible" title="Basic Modal"
-             @ok="handleOk"
-             @cancel="handleCancel">
+    <a-modal :visible="visible" title="View Sheet"
+             :dialog-style="{ top: '20px' }"
+             @cancel="handleCancel"
+             :width="640">
+        <p class="text-center text-info">This is the books that will be uploaded</p>
+        <template slot="footer">
+            <a-button key="back" @click="handleCancel">
+                Return
+            </a-button>
+            <a-button key="submit" type="primary" :loading="confirmLoading" @click="handleOk">
+                Submit
+            </a-button>
+        </template>
         <BooksTable
             :books="books"
+            :allowDelete="false"
             />
     </a-modal>
 </template>

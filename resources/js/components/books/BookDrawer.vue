@@ -60,6 +60,7 @@
 
 <script>
 import {dataService} from '../../shared/data.service'
+import {mapActions} from "vuex";
 const isValid = 'success'
 const isNotValid = 'error'
 const validating = 'validating'
@@ -79,13 +80,13 @@ export default {
         };
     },
     methods: {
+        ...mapActions(['addBookAction']),
         handleSubmit(e) {
             e.preventDefault();
             this.form.validateFields(async (err, values) => {
                 if (!err) {
                     try {
-                        await dataService.addBook(values);
-                        this.$emit('addedResource');
+                        await this.addBookAction(values);
                         this.form.resetFields();
                         this.onClose();
                     }catch (e) {

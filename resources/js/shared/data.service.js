@@ -44,7 +44,7 @@ const updateBook = async (book)=>{
 }
 const deleteBook = async (id)=>{
     try{
-        const response = await axios.delete(`${API}/books/${id}`,book);
+        const response = await axios.delete(`${API}/books/${id}`);
         return evaluateResponse(response) || {};
     }
     catch (e) {
@@ -55,7 +55,7 @@ const deleteBook = async (id)=>{
 const patchAddBooks = async (books)=>{
     try{
         const response = await axios.post(`${API}/books/multiple`,books);
-        return evaluateResponse(response).books || {};
+        return evaluateResponse(response) || {};
     }
     catch (e) {
         console.error(e);

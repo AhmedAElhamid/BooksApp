@@ -12,28 +12,22 @@
             </button>
             <span class="ml-3">OR</span>
             <UploadExcel
-                @sheetUploaded="displayExcelSheet"
                 @submitted="submittedExcel"
             />
         </a-row>
         <p class="message text-info" v-if="submittedMessage">{{ submittedMessage }}</p>
         <BooksTable
             class="table"
-            :books="this.books"
+            :allowDelete="true"
+            :books="books"
+            @delete-book="deleteBook"
         />
         <BookDrawer
             @close="closeDrawer"
             @addedResource="refreshBooks"
             :visible="drawerVisible"
         />
-<!--        <ExcelModal-->
-<!--            :books="sheet"-->
-<!--            :visible="modalVisible"-->
-<!--            :confirm-loading="uploading"-->
-<!--            @submitSheet="",-->
-<!--            @cancel="()=>this.modalVisible = false"-->
-<!--            />-->
-<!--        <UploadExcel />-->
+
     </div>
 </template>
 
@@ -43,6 +37,7 @@ import UploadExcel from "./UploadExcel";
 import BooksTable from "./BooksTable";
 import BookDrawer from "./BookDrawer";
 import ExcelModal from "./ExcelModal";
+import {mapActions, mapState} from "vuex";
 
 export default {
     name: "Books",
@@ -52,17 +47,18 @@ export default {
     },
     data() {
         return {
-            books: [],
             sheet:[],
             submittedMessage:"",
             drawerVisible: false,
-            modalVisible:false,
-            uploading:false,
         }
     },
+    computed:{
+        ...mapState(['books'])
+    },
     methods: {
+        ...mapActions(['getBooksAction','deleteBookAction']),
         async loadBooks() {
-            this.books = await dataService.getBooks()
+            await this.getBooksAction();
         },
         addBook() {
             this.drawerVisible = true;
@@ -74,26 +70,9 @@ export default {
         refreshBooks(){
             this.loadBooks()
         },
-        displayExcelSheet(rows){
-            if(this.validateSheet(rows[0])){
-                console.log(this.mapSheetRowsToBooks(rows));
-                this.sheet = this.mapSheetRowsToBooks(rows);
-                this.modalVisible = true;
-            }
-        },
-        mapSheetRowsToBooks(rows){
-            return rows.slice(1).map(r => ({
-                title:r[0] || '',
-                isbn:r[1] || '',
-                description:r[2] || '',
-                author:r[3] || '',
-            }))
-        },
-        validateSheet(headers){
-            return headers[0] === 'book title' &&
-                headers[1] === 'ISBN' &&
-                headers[2] === 'description' &&
-                headers[3] === 'author Name'
+        async deleteBook(id){
+            console.log(id)
+            await this.deleteBookAction(id)
         },
         async submitFile(){
             let formData = new FormData();

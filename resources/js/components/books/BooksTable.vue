@@ -66,13 +66,14 @@
 </template>
 
 <script>
-
-import {dataService} from "../../shared/data.service";
-
 export default {
     name:"BooksTable",
     props: {
-        books: {
+        allowDelete: {
+            type: Boolean,
+            default: false
+        },
+        books:{
             type: Array,
             default: []
         },
@@ -172,13 +173,16 @@ export default {
                         }
                     },
                 },
-                {
-                    title: 'operation',
-                    dataIndex: 'operation',
-                    scopedSlots: { customRender : 'operation' },
-                },
             ],
         };
+    },
+    created() {
+        if(this.allowDelete)
+            this.columns.push({
+                title: 'Actions',
+                dataIndex: 'operation',
+                scopedSlots: { customRender : 'operation' },
+            })
     },
     methods: {
         handleSearch(selectedKeys, confirm, dataIndex) {
@@ -186,18 +190,12 @@ export default {
             this.searchText = selectedKeys[0];
             this.searchedColumn = dataIndex;
         },
-
         handleReset(clearFilters) {
             clearFilters();
             this.searchText = '';
         },
-        async onDelete(key) {
-            console.log(key)
-            const data = dataService.deleteBook(key)
-            if(data){
-                const books = [...this.books];
-                this.books = books.filter(item => item.key !== key);
-            }
+        onDelete(key) {
+            this.$emit('delete-book',key)
         },
     },
     filters: {

@@ -1,5 +1,5 @@
 <template>
-    <a-table bordered :data-source="authors | mapAuthorsToTableData" :columns="columns">
+    <a-table bordered :data-source="authors | sortAuthors | mapAuthorsToTableData" :columns="columns">
         <div
             slot="filterDropdown"
             slot-scope="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
@@ -137,6 +137,11 @@ export default {
                 books:books.length,
             }))
         },
+        sortAuthors: function (authors){
+            return [...authors]
+                .sort((a,b)=>
+                    new Date(a.name) - new Date(b.name))
+        }
     },
 }
 </script>

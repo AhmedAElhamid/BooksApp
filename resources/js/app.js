@@ -9,8 +9,10 @@ window.Vue = require('vue');
 import App from './App.vue';
 import VueRouter from 'vue-router';
 import VueAxios from 'vue-axios';
+import Vuex from "vuex";
 import axios from 'axios';
 import {routes} from './routes';
+import store from './store'
 
 
 Vue.use(VueRouter);
@@ -25,5 +27,6 @@ const router = new VueRouter({
 const app = new Vue({
     el: '#app',
     router: router,
+    store,
     render: h => h(App),
 });
